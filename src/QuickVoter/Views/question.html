@@ -1,0 +1,61 @@
+﻿@Master['Layout.html']
+
+@Section['Content']
+    <header class="container">
+        <h2>Vilken musik lyssnar du helst på när du kodar?</h2>
+    </header>
+
+<section id="currentQuestions" class="container">
+    <div class="row">
+        <div class="col-lg-10">
+            <table class="table table-striped question-list">
+                <thead>
+                    <tr>
+                        <th class="text-center"></th>
+                        <th class="text-center">Votes</th>
+                        <th>Answer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
+                        <td class="number-of-votes">12</td>
+                        <td>
+                            <div class="answer">Dubstep</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
+                        <td class="number-of-votes">10</td>
+                        <td>
+                            <div class="answer">Pop</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
+                        <td class="number-of-votes">4</td>
+                        <td>
+                            <div class="answer">Metal</div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td>
+                            <form class="form-horizontal">
+                                <div class="input-group">
+                                    <input type="text" placeholder="New answer" class="form-control">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="button">Add</button>
+                                    </span>
+                                </div><!-- /input-group -->
+                            </form>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</section>
+@EndSection

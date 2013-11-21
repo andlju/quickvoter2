@@ -1,0 +1,75 @@
+﻿body {
+    font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
+    color: #232323;
+    background-color: #fff;
+    padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+
+/* Generic style tweaking */
+h1 {
+    margin-bottom: 1em;
+}
+
+
+/* Styles for validation helpers
+-----------------------------------------------------------*/
+.field-validation-error {
+    color: #f00;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+.input-validation-error {
+    border: 1px solid #f00;
+    background-color: #fee;
+}
+
+.validation-summary-errors {
+    font-weight: bold;
+    color: #f00;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+
+/* Header */
+header {
+    margin-bottom: 2em;
+}
+
+/* Front page list styles */
+
+.question-list {
+    font-size: 1.2em;    
+}
+
+.number-of-answers {
+    font-weight: bold;
+    font-size: 1.3em;
+    text-align: center;
+}
+
+.number-of-votes {
+    font-weight: bold;
+    font-size: 1.3em;
+    text-align: center;
+}
+
+.question {
+    
+}
+
+.answer {
+    
+}
+
+.asked-by {
+    font-style: italic;
+}
+
+.leading {
+    font-weight: bold;
+}

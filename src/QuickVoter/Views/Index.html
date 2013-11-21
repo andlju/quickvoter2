@@ -1,0 +1,56 @@
+﻿@Master['Layout.html']
+
+@Section['Content']
+    <header class="container">
+        <h1>Current questions <small class="hidden-xs">What are people asking right now?</small></h1>
+    </header>
+
+<section id="currentQuestions" class="container">
+    <div class="row">
+        <div class="col-lg-10">
+            <table class="table table-striped question-list">
+                <thead>
+                    <tr>
+                        <th class="text-center hidden-xs">Answers</th>
+                        <th class="text-center hidden-xs">Votes</th>
+                        <th>Question</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="number-of-answers hidden-xs">3</td>
+                        <td class="number-of-votes hidden-xs">12</td>
+                        <td>
+                            <div class="answer"><a href="/question/1">Vilken musik lyssnar du helst på när du kodar?</a></div>
+                            <div class="asked-by pull-right">Asked by CodingInsomnia</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="number-of-answers hidden-xs">3</td>
+                        <td class="number-of-votes hidden-xs">12</td>
+                        <td>
+                            <div class="answer"><a href="/question/2">Vad är det bästa med CSS?</a></div>
+                            <div class="asked-by pull-right">Asked by CodingInsomnia</div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="hidden-xs"></td>
+                        <td>
+                            <form class="form-horizontal">
+                                <div class="input-group">
+                                    <input type="text" placeholder="New question" class="form-control">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="button">Add</button>
+                                    </span>
+                                </div><!-- /input-group -->
+                            </form>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</section>
+@EndSection
