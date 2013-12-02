@@ -15,24 +15,24 @@ namespace QuickVoter.Modules
 
     public class QuestionItemResource
     {
-        public int QuestionId { get; set; }
+        public string QuestionId { get; set; }
         public string Text { get; set; }
-        public int NumberOfVotes { get; set; }
-        public int NumberOfAnswers { get; set; }
+        public long NumberOfVotes { get; set; }
+        public long NumberOfAnswers { get; set; }
     }
 
     public class QuestionResource
     {
-        public int QuestionId { get; set; }
+        public string QuestionId { get; set; }
         public string Text { get; set; }
         public List<AnswerItemResource> Answers { get; set; }  
     }
 
     public class AnswerItemResource
     {
-        public int AnswerId { get; set; }
+        public long AnswerId { get; set; }
         public string Text { get; set; }
-        public int NumberOfVotes { get; set; }
+        public long NumberOfVotes { get; set; }
     }
 
     public class QuestionsModule : NancyModule
@@ -50,7 +50,7 @@ namespace QuickVoter.Modules
 
             Get["/questions/{questionId}"] = pars =>
             {
-                var question = questionService.GetQuestion((int)pars.questionId);
+                var question = questionService.GetQuestion((string)pars.questionId);
                 if (question == null)
                     return HttpStatusCode.NotFound;
 
@@ -69,14 +69,14 @@ namespace QuickVoter.Modules
             Post["/questions/{questionId}/answers"] = pars =>
             {
                 string text = Request.Form.text;
-                var answer = questionService.AddAnswer((int)pars.questionId, text);
+                var answer = questionService.AddAnswer((string)pars.questionId, text);
 
                 return Response.AsJson(BuildAnswerItemResource(answer));
             };
 
             Post["/questions/{questionId}/answers/{answerId}"] = pars =>
             {
-                var answer = questionService.AddVote((int)pars.questionId, (int)pars.answerId);
+                var answer = questionService.AddVote((string)pars.questionId, (int)pars.answerId);
 
                 return Response.AsJson(BuildAnswerItemResource(answer));
             };
