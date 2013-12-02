@@ -2,7 +2,7 @@
 
 @Section['Content']
     <header class="container">
-        <h2>Vilken musik lyssnar du helst på när du kodar?</h2>
+        <h2 data-bind="text: text"></h2>
     </header>
 
 <section id="currentQuestions" class="container">
@@ -16,26 +16,12 @@
                         <th>Answer</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
-                        <td class="number-of-votes">12</td>
+                <tbody data-bind="foreach: answers">
+                    <tr data-bind="css: { leading: $parent.getLeadingAnswer() == $data }">
+                        <td class="text-center"><button class="btn btn-sm btn-primary" data-bind="click: addVote">Vote</button></td>
+                        <td class="number-of-votes" data-bind="text: votes"></td>
                         <td>
-                            <div class="answer">Dubstep</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
-                        <td class="number-of-votes">10</td>
-                        <td>
-                            <div class="answer">Pop</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
-                        <td class="number-of-votes">4</td>
-                        <td>
-                            <div class="answer">Metal</div>
+                            <div class="answer" data-bind="text: text"></div>
                         </td>
                     </tr>
                 </tbody>
@@ -43,11 +29,11 @@
                     <tr>
                         <td colspan="2"></td>
                         <td>
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" action="" data-bind="submit: addAnswer">
                                 <div class="input-group">
-                                    <input type="text" placeholder="New answer" class="form-control">
+                                    <input type="text" placeholder="New answer" class="form-control" data-bind="value: newAnswer">
                                     <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="button">Add</button>
+                                        <button type="submit" class="btn btn-primary">Add</button>
                                     </span>
                                 </div><!-- /input-group -->
                             </form>
@@ -59,3 +45,66 @@
     </div>
 </section>
 @EndSection
+
+@Section['Scripts']
+
+<script type="text/javascript">
+
+    function QuestionViewModel(model) {
+        var self = this;
+
+        self.text = model.Text;
+
+        self.answers = ko.observableArray(
+            $.map(model.Answers, function(el) { return new AnswerViewModel(el); })
+        );
+
+        self.newAnswer = ko.observable();
+
+        self.addAnswer = function () {
+            self.answers.push(new AnswerViewModel({ Text: self.newAnswer(), Votes: 1 }));
+            self.newAnswer('');
+        };
+
+        self.getLeadingAnswer = function () {
+            var leadingAnswer = null;
+            for(var i in self.answers())
+            {
+                var answer = self.answers()[i];
+                if (leadingAnswer == null || leadingAnswer.votes() < answer.votes()) {
+                    leadingAnswer = answer;
+                }
+            }
+            return leadingAnswer;
+        };
+    }
+    
+    function AnswerViewModel(model) {
+        var self = this;
+
+        self.text = model.Text;
+        self.votes = ko.observable(model.Votes);
+        
+        self.addVote = function () {
+            self.votes(self.votes() + 1);
+        };
+    }
+
+    $(function () {
+        var pageViewModel = new QuestionViewModel({            
+            Text: "Vilken musik tycker du bäst om att koda till?",
+            Answers: [
+                { Text: "Dubstep", Votes: 12, },
+                { Text: "Metal", Votes: 7, },
+                { Text: "Eurodisco", Votes: 4, },
+                { Text: "Rock", Votes: 2, }
+            ]
+        });
+
+        ko.applyBindings(pageViewModel);
+    });
+
+</script>
+
+@EndSection
+
