@@ -1,6 +1,7 @@
 ﻿@Master['Layout.html']
 
 @Section['Content']
+<!-- ko with: question-->
     <header class="container">
         <h2 data-bind="text: text"></h2>
     </header>
@@ -44,12 +45,13 @@
         </div>
     </div>
 </section>
+<!-- /ko -->
 @EndSection
 
 @Section['Scripts']
 
 <script type="text/javascript">
-
+    ///<reference path="/Scripts/app/questionService.js"/>
     function QuestionViewModel(model) {
         var self = this;
 
@@ -62,8 +64,13 @@
         self.newAnswer = ko.observable();
 
         self.addAnswer = function () {
-            self.answers.push(new AnswerViewModel({ Text: self.newAnswer(), Votes: 1 }));
-            self.newAnswer('');
+            var text = self.newAnswer();
+            QuestionService.addAnswer(model.QuestionId, text).success(
+                function(data) {
+                    self.answers.push(new AnswerViewModel(data));
+                    self.newAnswer('');
+                }
+            );
         };
 
         self.getLeadingAnswer = function () {
@@ -90,16 +97,23 @@
         };
     }
 
+    function PageViewModel() {
+        var self = this;
+
+        self.question = ko.observable();
+        
+        self.reloadQuestion = function() {
+            QuestionService.getQuestion('@Model.QuestionId')
+                .success(function (data) {
+                    self.question(new QuestionViewModel(data));
+                });
+        };
+        
+        self.reloadQuestion();
+    }
+    
     $(function () {
-        var pageViewModel = new QuestionViewModel({            
-            Text: "Vilken musik tycker du bäst om att koda till?",
-            Answers: [
-                { Text: "Dubstep", Votes: 12, },
-                { Text: "Metal", Votes: 7, },
-                { Text: "Eurodisco", Votes: 4, },
-                { Text: "Rock", Votes: 2, }
-            ]
-        });
+        var pageViewModel = new PageViewModel();
 
         ko.applyBindings(pageViewModel);
     });

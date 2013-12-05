@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Web.UI.HtmlControls;
 using Nancy;
 using QuickVoter.Services;
 
@@ -17,7 +18,7 @@ namespace QuickVoter.Modules
     {
         public string QuestionId { get; set; }
         public string Text { get; set; }
-        public long NumberOfVotes { get; set; }
+        public long Votes { get; set; }
         public long NumberOfAnswers { get; set; }
     }
 
@@ -33,7 +34,7 @@ namespace QuickVoter.Modules
         public string QuestionId { get; set; }
         public long AnswerId { get; set; }
         public string Text { get; set; }
-        public long NumberOfVotes { get; set; }
+        public long Votes { get; set; }
     }
 
     public class QuestionsModule : NancyModule
@@ -82,6 +83,24 @@ namespace QuickVoter.Modules
 
                 return Response.AsJson(BuildAnswerItemResource(answer));
             };
+
+            Post["/questions/seed"] = _ =>
+            {
+                questionService.DeleteAll();
+
+                var question1 = questionService.AddQuestion("Vilken musik kodar du helst till?");
+                questionService.AddAnswer(question1.QuestionId, "Dubstep");
+                questionService.AddAnswer(question1.QuestionId, "Metal");
+                questionService.AddAnswer(question1.QuestionId, "Klassiskt");
+                questionService.AddAnswer(question1.QuestionId, "Eurodisco");
+
+                var question2 = questionService.AddQuestion("Vad är det bästa med CSS?");
+                questionService.AddAnswer(question2.QuestionId, "Inget");
+                questionService.AddAnswer(question2.QuestionId, "Skojjar du?");
+                questionService.AddAnswer(question2.QuestionId, "Bootstrap");
+
+                return HttpStatusCode.OK;
+            };
         }
 
         private static QuestionItemResource BuildQuestionItemResource(Question q)
@@ -91,7 +110,7 @@ namespace QuickVoter.Modules
                 QuestionId = q.QuestionId,
                 Text = q.Text,
                 NumberOfAnswers = q.Answers.Count,
-                NumberOfVotes = q.Answers.Sum(a => a.NumberOfVotes)
+                Votes = q.Answers.Sum(a => a.Votes)
             };
         }
         private static QuestionResource BuildQuestionResource(Question q)
@@ -111,7 +130,7 @@ namespace QuickVoter.Modules
                 QuestionId = a.QuestionId,
                 AnswerId = a.AnswerId,
                 Text = a.Text,
-                NumberOfVotes = a.NumberOfVotes
+                Votes = a.Votes
             };
         }
     }

@@ -112,6 +112,7 @@
     <Compile Include="Services\Answer.cs" />
     <Compile Include="Services\InMemoryQuestionService.cs" />
     <Compile Include="Services\IQuestionService.cs" />
+    <Compile Include="Services\MongoQuestionService.cs" />
     <Compile Include="Services\Question.cs" />
   </ItemGroup>
   <PropertyGroup>

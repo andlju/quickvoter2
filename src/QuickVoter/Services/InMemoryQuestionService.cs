@@ -41,7 +41,7 @@ namespace QuickVoter.Services
             var answer = new Answer()
             {
                 AnswerId = lastAnswerId,
-                NumberOfVotes = 1,
+                Votes = 1,
                 QuestionId = questionId,
                 Text = text
             };
@@ -57,7 +57,7 @@ namespace QuickVoter.Services
                 throw new InvalidOperationException(string.Format("No question with id {0} found", questionId));
 
             var answer = q.Answers.Find(a => a.AnswerId == answerId);
-            answer.NumberOfVotes++;
+            answer.Votes++;
 
             return answer;
         }

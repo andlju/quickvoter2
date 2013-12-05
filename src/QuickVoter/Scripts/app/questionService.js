@@ -1,6 +1,6 @@
-﻿var QuickVoter = QuickVoter | {};
+﻿window.QuestionService = window.QuestionService | {};
 
-QuickVoter.QuestionService = function($) {
+window.QuestionService = function($) {
 
     var getQuestions = function() {
         return $.ajax('/questions');

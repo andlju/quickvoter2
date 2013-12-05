@@ -9,7 +9,7 @@ namespace QuickVoter.Modules
         {
             Get["/"] = _ => View["index"];
 
-            Get["/question/{questionId}"] = pars => View["question"];
+            Get["/question/{questionId}"] = pars => View["question", pars];
 
         }
     }
