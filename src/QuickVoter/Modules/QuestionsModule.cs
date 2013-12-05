@@ -40,7 +40,7 @@ namespace QuickVoter.Modules
     public class QuestionsModule : NancyModule
     {
 
-        public QuestionsModule(IQuestionService questionService)
+        public QuestionsModule(IQuestionService questionService) : base("/api")
         {
             Get["/questions"] = _ =>
             {

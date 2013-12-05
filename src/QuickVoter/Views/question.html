@@ -93,6 +93,10 @@
         self.votes = ko.observable(model.Votes);
         
         self.addVote = function () {
+            QuestionService.addVote(model.QuestionId, model.AnswerId).success(
+                function(data) {
+                    self.votes(data.Votes);
+                });
             self.votes(self.votes() + 1);
         };
     }
