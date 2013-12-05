@@ -30,6 +30,7 @@ namespace QuickVoter.Modules
 
     public class AnswerItemResource
     {
+        public string QuestionId { get; set; }
         public long AnswerId { get; set; }
         public string Text { get; set; }
         public long NumberOfVotes { get; set; }
@@ -50,7 +51,8 @@ namespace QuickVoter.Modules
 
             Get["/questions/{questionId}"] = pars =>
             {
-                var question = questionService.GetQuestion((string)pars.questionId);
+                string questionId = pars.questionId;
+                var question = questionService.GetQuestion(questionId);
                 if (question == null)
                     return HttpStatusCode.NotFound;
 
@@ -106,6 +108,7 @@ namespace QuickVoter.Modules
         {
             return new AnswerItemResource()
             {
+                QuestionId = a.QuestionId,
                 AnswerId = a.AnswerId,
                 Text = a.Text,
                 NumberOfVotes = a.NumberOfVotes

@@ -19,7 +19,7 @@ namespace QuickVoter.Services
         Question GetQuestion(string questionId);
         IEnumerable<Question> GetQuestions();
         Answer AddAnswer(string questionId, string text);
-        Answer AddVote(string questionId, int answerId);
+        Answer AddVote(string questionId, long answerId);
     }
 
     public interface IMongoQuestionServiceConfiguration
@@ -74,7 +74,7 @@ namespace QuickVoter.Services
         public Question GetQuestion(string questionId)
         {
             var questionsCollection = _database.GetCollection<QuestionModel>("questions");
-            var q = Query.EQ("_id", questionId);
+            var q = Query.EQ("_id", new ObjectId(questionId));
 
             var question = questionsCollection.FindOne(q);
 
@@ -83,6 +83,9 @@ namespace QuickVoter.Services
 
         private static Question BuildQuestion(QuestionModel q)
         {
+            if (q == null)
+                return null;
+
             var questionId = q.Id.ToString();
             var question = new Question()
             {
@@ -93,20 +96,24 @@ namespace QuickVoter.Services
             {
                 question.Answers =
                     q.Answers.Select(
-                        a =>
-                            new Answer()
-                            {
-                                AnswerId = a.AnswerId,
-                                Text = a.Text,
-                                NumberOfVotes = a.Votes,
-                                QuestionId = questionId
-                            }).ToList();
+                        a => BuildAnswer(a, questionId)).ToList();
             }
             else
             {
                 question.Answers = new List<Answer>();
             }
             return question;
+        }
+
+        private static Answer BuildAnswer(AnswerModel a, string questionId)
+        {
+            return new Answer()
+            {
+                AnswerId = a.AnswerId,
+                Text = a.Text,
+                NumberOfVotes = a.Votes,
+                QuestionId = questionId
+            };
         }
 
         public IEnumerable<Question> GetQuestions()
@@ -119,12 +126,38 @@ namespace QuickVoter.Services
 
         public Answer AddAnswer(string questionId, string text)
         {
-            throw new NotImplementedException();
+            var questionsCollection = _database.GetCollection<QuestionModel>("questions");
+            var q = Query.EQ("_id", new ObjectId(questionId));
+
+            var question = questionsCollection.FindOne(q);
+            var id = question.Answers.Max(m => (long?) m.AnswerId).GetValueOrDefault(0) + 1;
+
+            var answer = new AnswerModel()
+            {
+                AnswerId = id,
+                Text = text,
+                Votes = 1
+            };
+            question.Answers.Add(answer);
+
+            questionsCollection.Save(question);
+
+            return BuildAnswer(answer, questionId);
         }
 
-        public Answer AddVote(string questionId, int answerId)
+        public Answer AddVote(string questionId, long answerId)
         {
-            throw new NotImplementedException();
+            var questionsCollection = _database.GetCollection<QuestionModel>("questions");
+            var q = Query.EQ("_id", new ObjectId(questionId));
+
+            var question = questionsCollection.FindOne(q);
+            var answer = question.Answers.FirstOrDefault(a => a.AnswerId == answerId);
+            if (answer == null)
+                return null;
+
+            answer.Votes++;
+            questionsCollection.Save(question);
+            return BuildAnswer(answer, questionId);
         }
     }
 }
