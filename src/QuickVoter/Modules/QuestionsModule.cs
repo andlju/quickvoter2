@@ -40,14 +40,14 @@ namespace QuickVoter.Modules
     public class QuestionsModule : NancyModule
     {
 
-        public QuestionsModule(IQuestionService questionService) : base("/api")
+        public QuestionsModule(IQuestionService questionService, IQuestionNotificationContext notificationContext) : base("/api")
         {
             Get["/questions"] = _ =>
             {
                 var questions = questionService.GetQuestions().Select(BuildQuestionItemResource);
                 return Response.AsJson(
                     new QuestionsResource() {Questions = questions.ToList()}
-                    );
+                    ).WithHeader("Cache-Control", "no-cache");
             };
 
             Get["/questions/{questionId}"] = pars =>
@@ -58,7 +58,8 @@ namespace QuickVoter.Modules
                     return HttpStatusCode.NotFound;
 
                 return Response.AsJson(
-                    BuildQuestionResource(question));
+                    BuildQuestionResource(question)).
+                    WithHeader("Cache-Control", "no-cache");
             };
 
             Post["/questions"] = pars =>
@@ -66,7 +67,10 @@ namespace QuickVoter.Modules
                 string text = Request.Form.text;
                 var question = questionService.AddQuestion(text);
 
-                return Response.AsJson(BuildQuestionItemResource(question));
+                var resource = BuildQuestionItemResource(question);
+                notificationContext.UpdateQuestion(resource);
+
+                return Response.AsJson(resource);
             };
 
             Post["/questions/{questionId}/answers"] = pars =>
@@ -74,14 +78,20 @@ namespace QuickVoter.Modules
                 string text = Request.Form.text;
                 var answer = questionService.AddAnswer((string)pars.questionId, text);
 
-                return Response.AsJson(BuildAnswerItemResource(answer));
+                var resource = BuildAnswerItemResource(answer);
+                notificationContext.UpdateAnswer(resource);
+
+                return Response.AsJson(resource);
             };
 
             Post["/questions/{questionId}/answers/{answerId}"] = pars =>
             {
                 var answer = questionService.AddVote((string)pars.questionId, (int)pars.answerId);
 
-                return Response.AsJson(BuildAnswerItemResource(answer));
+                var resource = BuildAnswerItemResource(answer);
+                notificationContext.UpdateAnswer(resource);
+
+                return Response.AsJson(resource);
             };
 
             Post["/questions/seed"] = _ =>
@@ -101,6 +111,7 @@ namespace QuickVoter.Modules
 
                 return HttpStatusCode.OK;
             };
+
         }
 
         private static QuestionItemResource BuildQuestionItemResource(Question q)

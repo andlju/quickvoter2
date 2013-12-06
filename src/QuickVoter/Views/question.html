@@ -66,13 +66,30 @@
         self.addAnswer = function () {
             var text = self.newAnswer();
             QuestionService.addAnswer(model.QuestionId, text).success(
-                function(data) {
-                    self.answers.push(new AnswerViewModel(data));
+                function (data) {
+                    self.answerUpdated(data);
                     self.newAnswer('');
                 }
             );
         };
 
+        self.answerUpdated = function (data) {
+            var answer = null;
+            for (var i in self.answers()) {
+                var a = self.answers()[i];
+                if (a.answerId == data.AnswerId) {
+                    answer = a;
+                    break;
+                }
+            }
+
+            if (!answer) {
+                self.answers.push(new AnswerViewModel(data));
+            } else {
+                answer.answerUpdated(data);
+            }
+        };
+        
         self.getLeadingAnswer = function () {
             var leadingAnswer = null;
             for(var i in self.answers())
@@ -89,20 +106,26 @@
     function AnswerViewModel(model) {
         var self = this;
 
+        self.answerId = model.AnswerId;
         self.text = model.Text;
         self.votes = ko.observable(model.Votes);
         
         self.addVote = function () {
             QuestionService.addVote(model.QuestionId, model.AnswerId).success(
-                function(data) {
-                    self.votes(data.Votes);
+                function (data) {
+                    self.answerUpdated(data);
                 });
             self.votes(self.votes() + 1);
+        };
+
+        self.answerUpdated = function(data) {
+            self.votes(data.Votes);
         };
     }
 
     function PageViewModel() {
         var self = this;
+        var questionsHub = $.connection.questionsHub;
 
         self.question = ko.observable();
         
@@ -110,10 +133,18 @@
             QuestionService.getQuestion('@Model.QuestionId')
                 .success(function (data) {
                     self.question(new QuestionViewModel(data));
+                    questionsHub.server.register(data.QuestionId);
                 });
         };
+
+        questionsHub.client.answerUpdated = function(data) {
+            self.question().answerUpdated(data);
+        };
         
-        self.reloadQuestion();
+        $.connection.hub.start().done(function () {
+            self.reloadQuestion();
+        });
+
     }
     
     $(function () {

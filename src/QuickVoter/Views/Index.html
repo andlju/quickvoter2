@@ -34,7 +34,7 @@
                                 <div class="input-group">
                                     <input type="text" data-bind="value: newQuestion" placeholder="New question" class="form-control">
                                     <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="button">Add</button>
+                                        <button type="submit" class="btn btn-primary">Add</button>
                                     </span>
                                 </div><!-- /input-group -->
                             </form>
@@ -53,6 +53,7 @@
     
     function PageViewModel() {
         var self = this;
+        var questionsHub = $.connection.questionsHub;
 
         self.questions = ko.observableArray([]);
         
@@ -61,6 +62,7 @@
                 console.log(data);
                 var questions = $.map(data.Questions, function(q) { return new QuestionViewModel(q); });
                 self.questions(questions);
+                questionsHub.server.register("questions");
             });
         };
 
@@ -73,7 +75,32 @@
             });
             self.newQuestion('');
         };
-        self.reloadQuestions();
+
+        self.questionUpdated = function (data) {
+            var question = null;
+            for (var i in self.questions()) {
+                var q = self.questions()[i];
+                if (q.questionId == data.QuestionId) {
+                    question = q;
+                    break;
+                }
+            }
+            if (!question) {
+                self.questions.push(new QuestionViewModel(data));
+            } else {
+                question.numberOfAnswers(data.NumberOfAnswers);
+                question.votes(data.Votes);
+            } 
+        };
+        
+        questionsHub.client.questionUpdated = function (data) {
+            self.questionUpdated(data);
+        };
+
+        $.connection.hub.start().done(function () {
+            self.reloadQuestions();
+        });
+
     }
 
     function QuestionViewModel(model) {
