@@ -40,7 +40,7 @@ namespace QuickVoter.Modules
     public class QuestionsModule : NancyModule
     {
 
-        public QuestionsModule(IQuestionService questionService, IQuestionNotificationContext notificationContext) : base("/api")
+        public QuestionsModule(IQuestionService questionService) : base("/api")
         {
             Get["/questions"] = _ =>
             {
@@ -68,7 +68,6 @@ namespace QuickVoter.Modules
                 var question = questionService.AddQuestion(text);
 
                 var resource = BuildQuestionItemResource(question);
-                notificationContext.UpdateQuestion(resource);
 
                 return Response.AsJson(resource);
             };
@@ -79,7 +78,6 @@ namespace QuickVoter.Modules
                 var answer = questionService.AddAnswer((string)pars.questionId, text);
 
                 var resource = BuildAnswerItemResource(answer);
-                notificationContext.UpdateAnswer(resource);
 
                 return Response.AsJson(resource);
             };
@@ -89,7 +87,6 @@ namespace QuickVoter.Modules
                 var answer = questionService.AddVote((string)pars.questionId, (int)pars.answerId);
 
                 var resource = BuildAnswerItemResource(answer);
-                notificationContext.UpdateAnswer(resource);
 
                 return Response.AsJson(resource);
             };
