@@ -16,12 +16,20 @@
                         <th>Question</th>
                     </tr>
                 </thead>
-                <tbody data-bind="foreach: questions">
+                <tbody>
                     <tr>
-                        <td class="number-of-answers hidden-xs" data-bind="text: numberOfAnswers">3</td>
-                        <td class="number-of-votes hidden-xs" data-bind="text: votes">12</td>
+                        <td class="number-of-answers hidden-xs">3</td>
+                        <td class="number-of-votes hidden-xs">12</td>
                         <td>
-                            <div class="answer"><a href="/question/1" data-bind="text: text, attr: {'href': '/question/' + questionId } "></a></div>
+                            <div class="answer"><a href="/question/1">Vilken musik kodar du helst till?</a></div>
+                            <div class="asked-by pull-right">Asked by CodingInsomnia</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="number-of-answers hidden-xs">2</td>
+                        <td class="number-of-votes hidden-xs">7</td>
+                        <td>
+                            <div class="answer"><a href="/question/2">Vad är det bästa med CSS?</a></div>
                             <div class="asked-by pull-right">Asked by CodingInsomnia</div>
                         </td>
                     </tr>
@@ -30,9 +38,9 @@
                     <tr>
                         <td colspan="2" class="hidden-xs"></td>
                         <td>
-                            <form class="form-horizontal" data-bind="submit: addQuestion">
+                            <form class="form-horizontal">
                                 <div class="input-group">
-                                    <input type="text" data-bind="value: newQuestion" placeholder="New question" class="form-control">
+                                    <input type="text" placeholder="New question" class="form-control">
                                     <span class="input-group-btn">
                                         <button type="submit" class="btn btn-primary">Add</button>
                                     </span>
@@ -49,74 +57,8 @@
 
 @Section['Scripts']
 
-<script type="text/javascript">
-    
-    function PageViewModel() {
-        var self = this;
-        var questionsHub = $.connection.questionsHub;
+<script type="text/javascript">    
 
-        self.questions = ko.observableArray([]);
-        
-        self.reloadQuestions = function() {
-            QuestionService.getQuestions().success(function (data) {
-                console.log(data);
-                var questions = $.map(data.Questions, function(q) { return new QuestionViewModel(q); });
-                self.questions(questions);
-                questionsHub.server.register("questions");
-            });
-        };
-
-        self.newQuestion = ko.observable();
-
-        self.addQuestion = function () {
-            QuestionService.addQuestion(self.newQuestion()).success(function(data) {
-                var questionId = data.QuestionId;
-                window.location.href = '/question/' + questionId;
-            });
-            self.newQuestion('');
-        };
-
-        self.questionUpdated = function (data) {
-            var question = null;
-            for (var i in self.questions()) {
-                var q = self.questions()[i];
-                if (q.questionId == data.QuestionId) {
-                    question = q;
-                    break;
-                }
-            }
-            if (!question) {
-                self.questions.push(new QuestionViewModel(data));
-            } else {
-                question.numberOfAnswers(data.NumberOfAnswers);
-                question.votes(data.Votes);
-            } 
-        };
-        
-        questionsHub.client.questionUpdated = function (data) {
-            self.questionUpdated(data);
-        };
-
-        $.connection.hub.start().done(function () {
-            self.reloadQuestions();
-        });
-
-    }
-
-    function QuestionViewModel(model) {
-        var self = this;
-
-        self.questionId = model.QuestionId;
-        self.text = model.Text;
-        self.votes = model.Votes;
-        self.numberOfAnswers = model.NumberOfAnswers;
-    }
-    
-    $(function() {
-        var pageViewModel = new PageViewModel();
-
-        ko.applyBindings(pageViewModel);
-    })
 </script>
 
 @EndSection
