@@ -16,20 +16,12 @@
                         <th>Question</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody data-bind="foreach: questions">
                     <tr>
-                        <td class="number-of-answers hidden-xs">3</td>
-                        <td class="number-of-votes hidden-xs">12</td>
+                        <td class="number-of-answers hidden-xs" data-bind="text: numberOfAnswers"></td>
+                        <td class="number-of-votes hidden-xs" data-bind="text: votes"></td>
                         <td>
-                            <div class="answer"><a href="/question/1">Vilken musik kodar du helst till?</a></div>
-                            <div class="asked-by pull-right">Asked by CodingInsomnia</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="number-of-answers hidden-xs">2</td>
-                        <td class="number-of-votes hidden-xs">7</td>
-                        <td>
-                            <div class="answer"><a href="/question/2">Vad är det bästa med CSS?</a></div>
+                            <div class="answer"><a href="/question/1" data-bind="text: text, attr : { href : '/question/' + questionId } "></a></div>
                             <div class="asked-by pull-right">Asked by CodingInsomnia</div>
                         </td>
                     </tr>
@@ -38,9 +30,9 @@
                     <tr>
                         <td colspan="2" class="hidden-xs"></td>
                         <td>
-                            <form class="form-horizontal">
+                            <form class="form-horizontal" data-bind="submit: addQuestion">
                                 <div class="input-group">
-                                    <input type="text" placeholder="New question" class="form-control">
+                                    <input type="text" placeholder="New question" class="form-control" data-bind="value: newQuestion">
                                     <span class="input-group-btn">
                                         <button type="submit" class="btn btn-primary">Add</button>
                                     </span>
@@ -59,6 +51,60 @@
 
 <script type="text/javascript">    
 
+    function QuestionViewModel(model) {
+        var self = this;
+
+        self.questionId = model.QuestionId;
+         
+        self.text = model.Text;
+
+        self.votes = model.Votes;
+
+        self.numberOfAnswers = model.NumberOfAnswers;
+        
+    }
+
+    function PageViewModel() {
+        var self = this;
+
+        self.hub = $.connection.questionsHub;
+
+        self.hub.client.questionAdded = function(data) {
+            self.questionAdded(data);
+        };
+
+        self.questionAdded = function(data) {
+            var q = new QuestionViewModel(data);
+            self.questions.push(q);
+        };
+        
+        $.connection.hub.start();
+        
+        self.questions = ko.observableArray([]);
+
+        self.newQuestion = ko.observable();
+
+        self.addQuestion = function () {
+            QuestionService.addQuestion(self.newQuestion()).done(function(data) {
+                self.newQuestion('');
+            });
+        };
+
+        self.reloadQuestions = function() {
+            QuestionService.getQuestions().done(function(data) {
+                var questions = $.map(data.Questions, function (q) { return new QuestionViewModel(q); });
+                self.questions(questions);
+            });
+        };
+
+        self.reloadQuestions();
+    }
+
+    $(function() {
+        var pageViewModel = new PageViewModel();
+        ko.applyBindings(pageViewModel);
+    });
+    
 </script>
 
 @EndSection

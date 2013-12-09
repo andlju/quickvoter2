@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Web.UI.HtmlControls;
+using Microsoft.AspNet.SignalR;
 using Nancy;
 using QuickVoter.Services;
 
@@ -69,6 +70,8 @@ namespace QuickVoter.Modules
 
                 var resource = BuildQuestionItemResource(question);
 
+                GlobalHost.ConnectionManager.GetHubContext<QuestionsHub>().Clients.All.questionAdded(resource);
+
                 return Response.AsJson(resource);
             };
 
@@ -79,6 +82,8 @@ namespace QuickVoter.Modules
 
                 var resource = BuildAnswerItemResource(answer);
 
+                GlobalHost.ConnectionManager.GetHubContext<QuestionsHub>().Clients.Group(resource.QuestionId).answerAdded(resource);
+
                 return Response.AsJson(resource);
             };
 
@@ -87,6 +92,8 @@ namespace QuickVoter.Modules
                 var answer = questionService.AddVote((string)pars.questionId, (int)pars.answerId);
 
                 var resource = BuildAnswerItemResource(answer);
+
+                GlobalHost.ConnectionManager.GetHubContext<QuestionsHub>().Clients.Group(resource.QuestionId).answerUpdated(resource);
 
                 return Response.AsJson(resource);
             };

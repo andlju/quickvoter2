@@ -128,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Modules\HomeModule.cs" />
+    <Compile Include="Modules\QuestionsHub.cs" />
     <Compile Include="Modules\QuestionsModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QuickVoterBootstrapper.cs" />

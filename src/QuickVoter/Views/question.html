@@ -2,9 +2,11 @@
 
 @Section['Content']
 
-    <header class="container">
-        <h2>Vilken musik kodar du helst till?</h2>
-    </header>
+<!-- ko with: question -->
+
+<header class="container">
+    <h2 data-bind="text: text"></h2>
+</header>
 
 <section id="currentQuestions" class="container">
     <div class="row">
@@ -17,26 +19,12 @@
                         <th>Answer</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody data-bind="foreach: answers">
                     <tr>
-                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
-                        <td class="number-of-votes">5</td>
+                        <td class="text-center"><button class="btn btn-sm btn-primary" data-bind="click: addVote">Vote</button></td>
+                        <td class="number-of-votes" data-bind="text: votes"></td>
                         <td>
-                            <div class="answer">Dubstep</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
-                        <td class="number-of-votes">6</td>
-                        <td>
-                            <div class="answer">Metal</div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="text-center"><button class="btn btn-sm btn-primary">Vote</button></td>
-                        <td class="number-of-votes">3</td>
-                        <td>
-                            <div class="answer">Klassiskt</div>
+                            <div class="answer" data-bind="text: text, css: { leading : $parent.currentLeader() == $data }"></div>
                         </td>
                     </tr>
                 </tbody>
@@ -44,9 +32,9 @@
                     <tr>
                         <td colspan="2"></td>
                         <td>
-                            <form class="form-inline" action="">
+                            <form class="form-inline" action="" data-bind="submit: addAnswer">
                                 <div class="input-group">
-                                    <input type="text" placeholder="New answer" class="form-control">
+                                    <input type="text" placeholder="New answer" data-bind="value: newAnswer" class="form-control">
                                     <span class="input-group-btn">
                                         <button type="submit" class="btn btn-primary">Add</button>
                                     </span>
@@ -60,12 +48,122 @@
     </div>
 </section>
 
+<!-- /ko -->
+
 @EndSection
 
 @Section['Scripts']
 
 <script type="text/javascript">
 
+    function AnswerViewModel(model) {
+        var self = this;
+
+        self.answerId = model.AnswerId;
+
+        self.questionId = model.QuestionId;
+        
+        self.text = model.Text;
+        
+        self.votes = ko.observable(model.Votes);
+
+        self.addVote = function () {
+            
+            QuestionService.addVote(self.questionId, self.answerId).done(function(data) {
+                // self.votes(data.Votes);
+            });
+        };
+    }
+    
+    function QuestionViewModel(model) {
+        var self = this;
+
+        self.questionId = model.QuestionId;
+        
+        self.text = model.Text;
+        
+        self.answers =
+            ko.observableArray(
+                $.map(model.Answers, function (a) { return new AnswerViewModel(a); }));
+
+        self.currentLeader = function() {
+            var currentLeader = null;
+            for (var idx in self.answers()) {
+                var a = self.answers()[idx];
+                if (!currentLeader || a.votes() > currentLeader.votes())
+                    currentLeader = a;
+            }
+            return currentLeader;
+        };
+
+        self.answerUpdated = function (data) {
+            
+            var answerId = data.AnswerId;
+            
+            for (var idx in self.answers()) {
+                var a = self.answers()[idx];
+                if (a.answerId == answerId) {
+                    a.votes(data.Votes);
+                    break;
+                }
+            }
+        };
+        
+        self.answerAdded = function(data) {
+            var a = new AnswerViewModel(data);
+            self.answers.push(a);
+        };
+        
+        self.newAnswer = ko.observable();
+
+        self.addAnswer = function () {
+            
+            QuestionService.addAnswer(self.questionId, self.newAnswer()).done(function(data) {
+            });
+
+            self.newAnswer('');
+        };
+
+    }
+    
+    function PageViewModel() {
+        var self = this;
+
+        self.hub = $.connection.questionsHub;
+
+        self.hub.client.answerUpdated = function(data) {
+            self.question().answerUpdated(data);
+        };
+
+        self.hub.client.answerAdded = function(data) {
+            self.question().answerAdded(data);
+        };
+        
+        self.question = ko.observable();
+
+        self.reloadQuestion = function() {
+            QuestionService.getQuestion('@Model.questionId').done(function(data) {
+                var q = new QuestionViewModel(data);
+                self.question(q);
+                self.hub.server.registerClient(data.QuestionId);
+
+            });
+        };
+
+        $.connection.hub.start().done(function() {
+        });
+        
+        self.reloadQuestion();
+
+    }
+
+    $(function () {
+
+        var pageViewModel = new PageViewModel();
+
+        ko.applyBindings(pageViewModel);
+
+    });
 </script>
 
 @EndSection
